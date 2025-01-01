@@ -1,0 +1,1509 @@
+## Beginning of file: https://umod.org/documentation/api/overview
+
+.NET framework
+CSharp ecosystem
+Server-side modification
+Plugins and hot loading
+Extensions and products
+Overview
+.NET framework
+Oxide and all of the games that Oxide actively supports are written in .NET or provide some interface through .NET.
+
+This guide is not meant to serve as introduction to programming. Though the entry level for Oxide is low, we do assume some basic programming knowledge.
+
+CSharp ecosystem
+Learning C# is fundamental to using Oxide. Oxide and all resources that Oxide currently supports are written in C#.
+
+Technically Oxide has legacy support for JS, Lua, and Python plugins; however, these are currently unsupported and will likely remain so due to lack of community interest.
+
+There are hundreds of free and open-source examples of working C# code written for Oxide and Oxide supported games.
+
+Server-side modification
+All of the games that Oxide supports are currently multiplayer games which have both a client-side and a server-side component.
+
+A game client is generally an executable file that a player runs locally on their machine to play the game.
+
+In contrast, a server is generally a service running on another machine over the internet which a player connects to in order to play the game with other players.
+
+Oxide support is injected into the server-side component exclusively. Oxide is not a game client modification. Our contributors are largely limited to capabilities (or lack thereof) provided by third-party game developers. This includes...
+
+Core game mechanics.
+Client-server integration
+Error handling
+Game engine
+Plugins and hot loading
+Oxide is bundled with a C# compiler. Plugins are downloaded and installed as raw source code, and may be unloaded or loaded at a whim.
+
+This is is especially useful during development, as Oxide will detect when plugin source code has changed and automatically reload the given plugin.
+
+Extensions and products
+Most extensions are free and open-source binaries and must be deployed as .dll files. Contrary to plugins, extensions may not be hot loaded and require a server restart for every update.
+
+Products are generally closed-source proprietary plugins or extensions which are also deployed as .dll files or remotely through our upcoming Marketplace extension.
+
+https://umod.org/documentation/api/getting-started
+
+Namespace
+Title
+Author
+Version
+Description
+Class Name
+Plugin Type
+Getting Started
+Below is a minimal example of an Oxide plugin.
+
+namespace Oxide.Plugins
+{
+    [Info("Epic Stuff", "Unknown Author", "0.1.0")]
+    [Description("Makes epic stuff happen")]
+    class EpicStuff : CovalencePlugin
+    {
+        private void Init()
+        {
+            Puts("A baby plugin is born!");
+        }
+
+        // The rest of the code magic
+
+        // TODO (you): Make more epic stuff
+    }
+}
+Namespace
+The namespace of each plugin should be Oxide.Plugins and will always be the same due to how plugins are currently setup to interact with each other and the core.
+
+namespace Oxide.Plugins
+Title
+The Title variable (first part of Info attribute) is what defines the plugin. This should be a unique name or codename related to the purpose of the plugin. This variable (Title) can be accessed throughout the plugin in non-static methods as well.
+
+"Epic Stuff"
+Author
+The Author variable (second part of Info attribute) is used to show who made or currently maintains the plugin. This should match the author's uMod.org username (if releasing). This (Author) variable can be accessed throughout the plugin in non-static methods as well.
+
+"Unknown Author"
+Version
+The Version variable (third part of Info attribute) is used to tell if the plugin is outdated or not and should be incremented with each release. Semantic Versioning is recommended. This variable (Version) can be accessed throughout the plugin in non-static methods as well.
+
+"0.1.0"
+Description
+The optional Description variable (standalone Description attribute) helps explain to users what the plugin does, in case the title is not enough. Make it good, but not too long! This (Description) variable can be accessed throughout the plugin in non-static methods as well.
+
+[Description("Makes epic stuff happen")]
+Class Name
+The class name of the plugin is also the Name variable. This needs to match the filename, otherwise warnings will be issued. The class name should not contain any spaces or numbers, and should always start with a capital letter. This variable (Name) can be accessed throughout the plugin in non-static methods as well.
+
+class EpicStuff
+Plugin Type
+Plugins should be inheriting the CovalencePlugin type. The CovalencePlugin type is used for both universal and non-universal plugins.
+
+class EpicStuff : CovalencePlugin
+
+## Beginning of file: https://umod.org/documentation/api/style-guide
+
+Title
+Author
+Version
+Description
+Style Guide
+Plugins and extensions require some core scaffolding to be functional and/or approved within the uMod ecosystem.
+
+Title
+The title of the plugin (first part of Info attribute in C# plugins) must be set and closely match the submission name on our site. Please avoid using "Plugin" or "uMod" in the title as that would be a bit redundant.
+Ban System
+BanPlugin for Admin
+Author
+The author of the plugin (second part of Info attribute in C# plugins) must be set and match or contain the name of the user submitting the plugin on our site. Please do not use this to advertise websites or game servers, or anything really.
+Wulf
+Fluw @ MyServer.net
+Version
+The version of the plugin (third part of Info attribute in C# plugins) must be set in the x.x or "x.x.x" format. This should be updated each time a plugin update is released. Semantic Versioning is recommended, though not fully supported.
+1.2.3
+2017-02-01 Beta 1
+Description
+The Description is an optional, standalone attribute, but recommended as other plugins can utilize it for making help commands and such. Please make sure to actually describe the plugin, but keep it brief. Best practice is to use Sentence case, not Title Case or CAPS. Keep it clean!
+Allows admin to ban players easily on command
+Cool Admin BanPlugin
+
+## Beginning of file: https://umod.org/documentation/api/configuration
+
+Simple configuration
+Creating
+Updating
+Advanced configuration
+Updating
+Loading
+Configuration
+Since many users can not or do not want to edit the plugin directly to change settings or options, it is best to offer them a configuration file that can easily be edited without worrying about messing up the plugin or it resetting each time the plugin is updated.
+
+Simple configuration
+Creating
+There are many methods to create a configuration file. The examples below outline the simplest possible usage.
+
+protected override void LoadDefaultConfig()
+{
+    LogWarning("Creating a new configuration file");
+    Config["ShowJoinMessage"] = true;
+    Config["ShowLeaveMessage"] = true;
+    Config["JoinMessage"] = "Welcome to this server";
+    Config["LeaveMessage"] = "Goodbye";
+}
+Updating
+Modify and save configuration entries by simply assigning the new values and calling the save function.
+
+[Command("test")]
+private void TestCommand(IPlayer player, string command, string[] args)
+{
+    Config["ShowJoinMessage"] = !(bool)Config["ShowJoinMessage"];
+    SaveConfig();
+}
+Advanced configuration
+For large plugins with more elaborate configurations, it may be helpful to scaffold a formal configuration class.
+
+private class PluginConfig
+{
+    public bool ShowJoinMessage;
+    public bool ShowLeaveMessage;
+    public string JoinMessage;
+    public string LeaveMessage;
+}
+Updating
+Write the configuration object directly to a file using this simple one-liner.
+
+private void SaveConfig()
+{
+    Config.WriteObject(config, true);
+}
+Loading
+Load the configuration object directly from a file.
+
+private PluginConfig config;
+
+private void Init()
+{
+    config = Config.ReadObject<PluginConfig>();
+}
+
+protected override void LoadDefaultConfig()
+{
+    Config.WriteObject(GetDefaultConfig(), true);
+}
+
+private PluginConfig GetDefaultConfig()
+{
+    return new PluginConfig
+    {
+        ShowJoinMessage = true,
+        ShowLeaveMessage = true,
+        JoinMessage = "Welcome to this server",
+        LeaveMessage = "Goodbye"
+    };
+}
+
+## Beginning of file: https://umod.org/documentation/api/data-files
+
+Using a data file
+Creating/saving the file
+Accessing data by key
+Removing a key
+Clearing the entire file
+Nested keys
+Write nested key
+Read nested key
+Checking if a file exists
+Loading a data object
+Saving a data object
+Advanced data
+Data Files
+Data files are used to store potentially large amounts of arbitrary data.
+
+Using a data file
+The GetDatafile method will return a DynamicConfigFile object. If the file requested already exists, its data will be loaded into the DynamicConfigFile. If the file does not exist, it will be created.
+
+Creating/saving the file
+DynamicConfigFile dataFile = Interface.Oxide.DataFileSystem.GetDatafile("MyDataFile");
+
+dataFile["EpicString"] = "EpicValue";
+dataFile["EpicNumber"] = 42;
+
+dataFile.Save();
+Doing this will create a file at the location oxide/data/MyDataFile.json which will have the following contents:
+
+{
+    "EpicString" : "EpicValue",
+    "EpicNumber" : 42
+}
+Accessing data by key
+// Check if the EpicString exists
+if (dataFile["EpicString"] != null)
+{
+    Puts(dataFile["EpicString"]); // Outputs: EpicValue
+}
+
+// Check if the EpicNumber exists
+if (dataFile["EpicNumber"] != null)
+{
+    Puts(dataFile["EpicNumber"]); // Outputs: 42
+}
+Removing a key
+Remove a particular key, using the previous example.
+
+dataFile.Remove("EpicString");
+dataFile.Save();
+The final JSON output:
+
+{
+    "EpicNumber" : 42
+}
+Clearing the entire file
+dataFile.Clear();
+Nested keys
+A developer may use the DynamicConfigFile object to easily read and write nested key-value pairs.
+
+Write nested key
+dataFile["EpicCategory", "EpicString"] = "EpicValue";
+{
+    "EpicCategory" : {
+        "EpicString" : "EpicValue"
+    }
+}
+Read nested key
+if (dataFile["EpicCategory", "EpicString"] != null)
+{
+    Puts(dataFile["EpicCategory", "EpicString"]); // Outputs: EpicValue
+}
+Checking if a file exists
+if (Interface.Oxide.DataFileSystem.ExistsDatafile("MyDataFile"))
+{
+    Puts("MyDataFile exists!");
+}
+else
+{
+    Puts("MyDataFile does not exist");
+}
+Loading a data object
+Much like advanced configurations, data files may be scaffolded using a class definition.
+
+private class StoredData
+{
+    public HashSet<PlayerInfo> Players = new HashSet<PlayerInfo>();
+
+    public StoredData()
+    {
+    }
+}
+
+private class PlayerInfo
+{
+    public string Id;
+    public string Name;
+
+    public PlayerInfo()
+    {
+    }
+
+    public PlayerInfo(IPlayer player)
+    {
+        Id = player.Id;
+        Name = player.Name;
+    }
+}
+
+private StoredData storedData;
+
+private void Init()
+{
+    storedData = Interface.Oxide.DataFileSystem.ReadObject<StoredData>("MyDataFile");
+}
+Saving a data object
+Change data files by simply assigning the new values and writing the object to the file.
+
+[Command("test")]
+private void TestCommand(IPlayer player, string command, string[] args)
+{
+    PlayerInfo info = new PlayerInfo(player);
+    if (storedData.Players.Contains(info))
+    {
+        player.Reply("Your data has already been added to the file");
+    }
+    else
+    {
+        storedData.Players.Add(info);
+        player.Reply("Saving your data to the file...");
+        Interface.Oxide.DataFileSystem.WriteObject("MyDataFile", storedData);
+    }
+}
+Advanced data
+For large plugins that potentially store massive amounts of data, using a single data file may not be advisable. In this case, uMod provides the ability to store many smaller data files in a custom sub-directory. These smaller data files may be loaded on an as-needed basis, thus reducing the impact of a plugin on memory and the filesystem overall.
+
+private DataFileSystem dataFile;
+
+private void Init()
+{
+    dataFile = new DataFileSystem($"{Interface.Oxide.DataDirectory}\\player_info");
+}
+
+private PlayerInfo LoadPlayerInfo(string playerId)
+{
+    return dataFile.ReadObject<PlayerInfo>($"playerInfo_{playerId}");
+}
+
+private void SavePlayerInfo(string playerId, PlayerInfo playerInfo)
+{
+    dataFile.WriteObject<PlayerInfo>($"playerInfo_{playerId}", playerInfo);
+}
+
+## Beginning of file: https://umod.org/documentation/api/localization
+
+Localization guidelines
+Plugin messages
+Registering messages
+Get all messages
+Get a single message
+Formatting a message
+Player language
+Get player language
+Set player language
+Plugin languages
+Get plugin languages
+Server language
+Get server language
+Set server language
+Localization
+Oxide provides a simple API with which a developer may easily add support for multiple languages to plugins and extensions.
+
+Localization guidelines
+English, please
+While we certainly encourage submissions that support multiple languages, English must be included.
+
+No prefixes
+While not required, not prefixing messages with your plugin name is generally encouraged as it keeps the messages sent to players shorter and cleaner. Some plugin developers opt for having the prefix configurable via the configuration file, but most do not set one.
+
+Format
+Try to keep messages brief and to the point to avoid taking up an excess amount of screen or console space. Best practice is to use Sentence case, not Title Case or ALL CAPS.
+
+Plugin messages
+Registering messages
+When a plugin loads, it must register all of the messages used in the plugin.
+
+protected override void LoadDefaultMessages()
+{
+    lang.RegisterMessages(new Dictionary<string, string>
+    {
+        ["EpicThing"] = "An epic thing has happened",
+        ["EpicTimes"] = "An epic thing has happened: {0} time(s)"
+    }, this);
+}
+Get all messages
+Retrieves a Dictionary of all the messages registered for a particular plugin and language.
+
+Dictionary<string, string> messages = lang.GetMessages("en", this);
+
+Puts($"Messages for {Title}:");
+foreach(KeyValuePair<string, string> message in messages)
+{
+    Puts($"{message.Key}: {message.Value}");
+}
+Get a single message
+[Command("epicstuff.message")]
+private void TestMessageCommand(IPlayer player)
+{
+    string message = lang.GetMessage("EpicThing", this, player.Id);
+    Puts(message);
+}
+The player's ID is passed to the GetMessage method, which will send them the message in their language when available.
+Formatting a message
+int amount = 0;
+
+[Command("epicstuff.amount")]
+private void TestAmountCommand(IPlayer player)
+{
+    amount++;
+    string message = lang.GetMessage("EpicTimes", this, player.Id);
+    Puts(string.Format(message, amount.ToString()));
+}
+Player language
+Get player language
+Retrieve the server-wide language setting for a player.
+
+[Command("epicstuff.language")]
+private void TestLanguageCommand(IPlayer player)
+{
+    Puts(lang.GetLanguage(player.Id));
+    // Will output (by default): en
+}
+Set player language
+Update the server-wide language setting for a player.
+
+[Command("epicstuff.french")]
+private void TestUpdateCommand(IPlayer player)
+{
+    lang.SetLanguage("fr", player.Id);
+    Puts("Merci bien! Votre langue est le français");
+}
+Players can also set their language by using the included oxide.lang, o.lang, or lang console or chat commands along with their desired, available two-letter language code.
+
+Plugin languages
+Get plugin languages
+Retrieves an array of strings containing a list of all the languages that a plugin supports.
+
+string[] languages = lang.GetLanguages(this);
+
+Puts($"Supported languages for {Title}:");
+foreach(string language in languages)
+{
+    Puts(language);
+}
+Server language
+Get server language
+Retrieve the default language for the server.
+
+Puts(lang.GetServerLanguage()); // Will output (by default): en
+Set server language
+Update the default language for the server.
+
+lang.SetServerLanguage("fr"); // Will set language to "fr"
+
+## Beginning of file: https://umod.org/documentation/api/hooks
+
+Basic example
+Available hooks
+Custom hooks
+Calling a hook from a plugin reference
+Calling a hook globally
+Hook subscription
+Unsubscribe from hook
+Subscribe to hook
+Hook overloading
+Hooks
+uMod supports hundreds of hooks and even more are available through plugins and extensions.
+
+Hooks are what make a plugin tick in most cases. A hook event is triggered every time a feature aspect of the game (or injection site) is procedurally passed through. A hook, once triggered, will call all plugin methods that are subscribed to it.
+
+More generally a hook is a default server-side game behavior which a plugin tracks, modifies, augments, or cancels.
+
+Basic example
+private bool CanUserLogin(string name, string id, string ip)
+{
+    Puts("No one can connect");
+    return false; // By returning false, no players may connect to this server
+}
+Available hooks
+Please consult our Games documentation for a list of all available hooks.
+
+Custom hooks
+Developers may leverage hooks to easily develop integrations between plugins.
+
+Calling a hook from a plugin reference
+For information about plugin references, please consult dependencies
+
+bool result = EpicStuff.CallHook<bool>("CanDoSomething");
+if (result)
+{
+    Puts("Player can do the thing!");
+}
+Calling a hook globally
+bool result = Interface.CallHook<bool>("CanDoSomething");
+if (result)
+{
+    Puts("Player can do the thing!");
+}
+Hook subscription
+By default, hooks that are included with uMod will be subscribed to automatically by a plugin when the plugin loads. A developer does not need to do anything special to subscribe to a hook aside from write a hook method that has the correct method name and corresponding parameters.
+
+However, developers may exercise direct control over which hooks are used by unsubscribing or subscribing to hooks manually.
+
+It is recommended for many (CPU intensive) hooks to unsubscribe from them entirely when they are not in use by any feature of a plugin.
+
+Unsubscribe from hook
+This example will unsubscribe OnUserChat if chatFeatureEnabled is false.
+
+bool chatFeatureEnabled = false;
+
+void Init()
+{
+    if (!chatFeatureEnabled)
+    {
+        Unsubscribe("OnUserChat");
+    }
+}
+
+object OnUserChat(IPlayer player, string message)
+{
+    // Do stuff
+}
+Subscribe to hook
+After unsubscribing from a hook as in the previous example, the plugin may re-subscribe again to re-enable the plugin's chat behavior.
+
+[Command("test")]
+private void TestCommand(IPlayer player, string command, string[] args)
+{
+    if (player.IsAdmin)
+    {
+        Puts("Enabling chat behavior");
+        Subscribe("OnUserChat");
+    }
+}
+Hook overloading
+Hooks support method overloading. This means that, if possible, a hook will call the method which has a signature that most closely resembles the arguments provided (when the methods have the same name).
+
+int EpicNumber = 42;
+string EpicString = "Whoa";
+
+Interface.CallHook("EpicHook", EpicNumber);
+Interface.CallHook("EpicHook", EpicNumber, EpicString);
+To catch the above hooks:
+
+private void EpicHook(int epicNumber)
+{
+    Puts($"Received a number '{epicNumber}'");
+}
+
+private void EpicHook(int epicNumber, string epicString)
+{
+    Puts($"Received a number '{epicNumber}' AND string '{epicString}'");
+}
+
+## Beginning of file: https://umod.org/documentation/api/player
+
+Information
+Name
+Id
+Address
+Ping
+Language
+IsConnected
+IsServer
+Administration
+IsAdmin
+IsBanned
+BanTimeRemaining
+Ban
+Unban
+Kick
+Character
+Health
+MaxHealth
+Heal
+Hurt
+Kill
+Rename
+Location
+Teleport
+Position
+Chat and Commands
+Message
+Reply
+Command
+Permissions
+HasPermission
+GrantPermission
+RevokePermission
+BelongsToGroup
+AddToGroup
+RemoveFromGroup
+Player Interface
+Oxide provides a standard universal method for accessing player information and performing actions on a player using the IPlayer interface.
+
+For examples when to use IPlayer in practice, consider the Commands documentation.
+
+Information
+Name
+The player's in-game display name, which by default is usually the same as their Steam account alias (but not necessarily).
+
+string name = player.Name;
+Id
+The player's unique identification number, in many cases a 64 bit Steam ID (but not necessarily).
+
+string id = player.Id;
+Address
+The player's IPv4 or IPv6 IP address.
+
+string address = player.Address;
+Ping
+The player's average network ping
+
+int ping = player.Ping;
+Language
+The player's currently configured language. For more information about CultureInfo, please see the official CultureInfo documentation.
+
+CultureInfo language = player.Language;
+IsConnected
+Whether a player is currently connected to the server
+
+if (player.IsConnected)
+{
+    player.Reply("You are connected");
+}
+IsServer
+Whether a player is the server
+
+if (player.IsServer)
+{
+    player.Reply("You are the server");
+}
+Administration
+IsAdmin
+Whether a player is an administrator
+
+if (player.IsAdmin)
+{
+    player.Reply("You are an admin");
+}
+IsBanned
+Whether a player is banned from the server
+
+if (player.IsBanned)
+{
+    player.Reply("You are banned");
+}
+BanTimeRemaining
+The amount of time left before a player is unbanned (if ban is temporary). For more information about TimeSpan, please see the official TimeSpan documentation.
+
+TimeSpan banTimeRemaining = player.BanTimeRemaining;
+Ban
+Bans a player from the server. For more information about TimeSpan, please see the official TimeSpan documentation.
+
+player.Ban("reason"); // Ban player indefinitely
+player.Ban("reason", new TimeSpan(2, 0, 0)); // Ban player for 2 hours
+Unban
+Unbans a player, allowing them to connect to the server
+
+player.Unban();
+Kick
+Kicks a player from the server
+
+player.Kick("reason");
+Character
+Health
+Retrieve or update a player's health
+
+float health = player.Health;
+player.Health = 100f;
+MaxHealth
+Retrieve or update a player's maximum health
+
+float maxHealth = player.MaxHealth;
+player.MaxHealth = 50f;
+Heal
+Heals a player's health a given amount
+
+player.Heal(100f);
+Hurt
+Hurts a player's health a given amount
+
+player.Hurt(50f);
+Kill
+Kills a player, causing them to die
+
+player.Kill();
+Rename
+Renames a player, changing their in-game name
+
+player.Rename("EpicName");
+Location
+Teleport
+Teleports a player to the given world position
+
+float x = 1;
+float y = 2;
+float z = 3;
+player.Teleport(x, y, z);
+
+GenericPosition position = new GenericPosition(x, y, z);
+player.Teleport(position);
+Position
+Retrieve a player's in-game character position
+
+GenericPosition position = player.Position();
+Chat and Commands
+Message
+Sends the given message and prefix to a player
+
+player.Message("hello world");
+Reply
+Replies to a player with the given message and prefix
+
+player.Reply("hello world");
+Command
+Runs the given console command as a player
+
+player.Command("command", arg1, arg2 /* , ... */ );
+Permissions
+HasPermission
+Checks if a player has the given permission
+
+if (player.HasPermission("epicstuff.use"))
+{
+    player.Reply("You have the epic permission");
+}
+GrantPermission
+Grants a given permission to a player
+
+player.GrantPermission("epicstuff.use");
+RevokePermission
+Removes a given permission from a player
+
+player.RevokePermission("epicstuff.use");
+BelongsToGroup
+Checks if a player belongs to a given group
+
+if (player.BelongsToGroup("admin"))
+{
+    player.Reply("You are in the admin group");
+}
+AddToGroup
+Adds a player to a given group
+
+player.AddToGroup("admin");
+RemoveFromGroup
+Removes a player from a given group
+
+player.RemoveFromGroup("admin");
+
+## Beginning of file: https://umod.org/documentation/api/security
+
+Sandbox
+Restricted namespaces
+Restriction exceptions
+Extensions
+Security
+Sandbox
+Plugins and products are compiled in a restricted mode that prevents a substantial number of .NET features from being used.
+
+These restrictions are in place to prevent potentially malicious code.
+
+Restricted namespaces
+The list of namespaces restricted by the sandbox includes, but is not limited to:
+
+System.IO
+System.Net
+System.Reflection
+System.Threading
+System.Runtime.InteropServices
+System.Diagnostics
+System.Security
+System.Timers
+Restriction exceptions
+There are some exceptions to the above list, and they are:
+
+System.Diagnostics.Stopwatch
+System.IO.MemoryStream
+System.IO.Stream
+System.IO.BinaryReader
+System.IO.BinaryWriter
+System.Net.Dns
+System.Net.Dns.GetHostEntry
+System.Net.IPAddress
+System.Net.IPEndPoint
+System.Net.NetworkInformation
+System.Net.Sockets.SocketFlags
+System.Security.Cryptography
+System.Threading.Interlocked
+Extensions
+Extensions are generally not sandboxed, meaning that any code deployed as an extension will have unmitigated access to all .NET libraries.
+
+For this reason, we do not generally accept extensions except in the most needful cases. If code is submitted as an extension, the author ought to be prepared to demonstrate why it absolutely must be deployed as an extension.
+
+## Beginning of file: https://umod.org/documentation/api/dependencies
+
+Optional dependencies
+Basic plugin reference
+Required dependencies
+Hard dependencies
+Dependencies
+Dependencies are functional relationships between different code resources.
+
+Optional dependencies
+Optional dependencies are plugins, extensions, products, or third-party libraries that your code can use but does not require to work.
+
+Generally an optional dependency means checking for the installation of another resource (i.e. plugin), and disabling or enabling features depending on its existence.
+
+Basic plugin reference
+A plugin reference field allows developers to magically reference another plugin. If the plugin is not available, the reference field will return null.
+
+The name of the plugin reference field must match the class name of the plugin being referenced.
+
+[PluginReference]
+private Plugin EpicStuff;
+
+private void Loaded()
+{
+    if (EpicStuff != null)
+    {
+        EpicStuff.Call("SomeMethod");
+    }
+}
+Required dependencies
+Resource requirements are plugins, extensions, products, or third-party libraries that a plugin must have in order to work.
+
+Requirements are not optional, and the code must check for them and display a helpful error message when they are unavailable.
+
+private void Loaded()
+{
+    if (EpicStuff == null)
+    {
+        LogError("Epic Stuff is not loaded, get it at https://umod.org");
+    }
+}
+Hard dependencies
+"Hard" dependencies are special cases where a resource (i.e. plugin) is compiled alongside another plugin and may be referenced directly (as opposed to indirectly through Oxide).
+
+It is not recommended to use hard dependencies except when it is absolutely needed.
+
+If a hard dependency is not installed alongside a plugin that requires it, a compilation error will be thrown.
+At the top of the plugin file, above using statements:
+
+// Requires: EpicStuff
+In the plugin body:
+
+// EpicStuff may now be referenced directly
+EpicStuff EpicStuff;
+
+private void Loaded()
+{
+    EpicStuff = (EpicStuff)Manager.GetPlugin("EpicStuff");
+}
+
+## Beginning of file: https://umod.org/documentation/api/integration
+
+Modularity and interoperability
+Plugin dependencies
+Call method
+Hook conflicts
+Custom hooks
+Integration
+Oxide provides an interface or intermediate layer to bring together two separate plugins which then cooperate ensuring that both plugins function together as a single system.
+
+Providing integrations with other plugins is one of the single best value adding propositions in the Oxide ecosystem.
+
+Modularity and interoperability
+It is recommended that plugins follow SOLID object oriented design principles. Using these principles correctly often means that disparate functionality is refactored down to constituent parts, each limited to their specific scope and responsibility.
+
+This approach is beneficial because, not only does it prevent code from becoming spaghetti (or a big mess), it also ensures each code unit is separated into easily digestible parts for other programmers to understand.
+
+Plugin dependencies
+Creating a dependency is usually the first step to creating a plugin integration.
+
+As outlined in the dependencies documentation, there are three (3) different types of dependencies: optional, required, and hard.
+
+A basic plugin reference:
+
+[PluginReference]
+private Plugin EpicStuff;
+The name of the property (e.g. "EpicStuff") must match the class name of the plugin being referenced exactly.
+Call method
+After creating a dependency, a plugin may call specific methods in another plugin.
+
+private void Loaded()
+{
+    if (EpicStuff != null) // check if plugin is loaded
+    {
+        EpicStuff.Call("SomeMethod", "argument1", "argument2");
+    }
+}
+When return behavior is required the call method returns an object by default. The call method has an optional generic method which may be used to explicitly cast the result.
+
+bool someResponse = EpicStuff.Call<bool>("SomeMethod", "argument1", "argument2");
+if(someResponse)
+{
+    Puts("SomeMethod Response: True");
+}
+In order for the above implementations to work, the EpicStuff plugin must have a method that matches the signatures used above.
+
+// In EpicStuff.cs
+private bool SomeMethod(string argument1, string argument2)
+{
+    Puts($"Do stuff: {argument1} {argument2}");
+    return true;
+}
+Hook conflicts
+Hooks that have return behavior may conflict when multiple plugins using a hook return different values. In such cases, it is often necessary for one plugin or the other to integrate and resolve the conflict.
+
+Hook conflicts usually print a message like...
+
+[Warning] Calling hook CanUserLogin resulted in a conflict between the following plugins: MyPlugin - True (Boolean), EpicPlugin (False (Boolean))
+The solution is usually to integrate MyPlugin with EpicPlugin (or vice versa) to give one plugin's hook precedence over the other.
+
+bool CanUserLogin (string name, string id, string ip)
+{
+    if (EpicPlugin != null)
+    {
+        var result = EpicPlugin.Call ("CanUserLogin", name, id, ip);
+        if (result is bool)
+        {
+            return (bool)result;
+        }
+    }
+
+    Puts("No conflict, do plugin stuff here");
+
+    return true;
+}
+Custom hooks
+Integrations do not necessarily require dependencies, sometimes simply using a custom hook is sufficient.
+
+For example, if a plugin creates a backpack for players to store their items, it could create a custom hook called CanCreateBackpack. Other plugins could then implement the CanCreateBackpack hook, and prevent the player from using their backpack in certain situations (e.g. being in an arena).
+
+This might be part of a backpack plugin:
+
+bool result = Interface.Oxide.CallHook<bool>("CanCreateBackpack", player);
+if (!result)
+{
+    return;
+}
+
+// Create backpack
+Then in the integration plugin:
+
+private object CanCreateBackpack(IPlayer player)
+{
+    if (IsInArena(player))
+    {
+        return false;
+    }
+
+    return null;
+}
+
+## Beginning of file: https://umod.org/documentation/api/continuous-integration
+
+GitHub app
+Documentation
+Licensing
+Releases
+Branches
+Issues
+GitLab app
+Builds
+Continuous Integration
+For experienced developers, uMod seamlessly integrates both ways with GitHub and GitLab (Coming Soon).
+
+GitHub app
+By installing the GitHub app on a repository, the entire plugin development life-cycle may be managed solely through GitHub.
+
+Documentation
+Adding or updating a README.md file in a plugin repository will automatically update the documentation displayed for that plugin on uMod.org
+
+Licensing
+Adding or updating a LICENSE.md file in a plugin repository will automatically update the license displayed for that plugin on uMod.org
+
+Releases
+Adding a release of your plugin on GitHub will automatically push a public update of your plugin on uMod.org.
+
+Branches
+Coming Soon!
+
+Issues
+Coming Soon!
+
+GitLab app
+Coming Soon!
+
+Builds
+Our CI server will compile and inspect the plugin automatically against (nearly) all games that the plugin supports upon release.
+
+If a build fails, the author will be notified and the release may be hidden from view.
+
+## Beginning of file: https://umod.org/documentation/api/preprocessor-directives
+
+Basic usage
+Available symbols
+Custom symbols
+Example
+Preprocessor Directives
+When writing or debugging plugins, it is useful to be familiar with preprocessor directives.
+
+Basic usage
+Each game and branch that Oxide supports has an accompanying preprocessor symbol.
+
+In universal plugins, this symbol may be used to separate code for different games. This is used frequently to ensure that blocks of code are only compiled for a particular game.
+
+private bool CanUserLogin(string name, string id, string ip)
+{
+#if RUST
+    // Do Rust-specific code
+#elif HURTWORLD
+    // Do Hurtworld-specific code
+#endif
+}
+When a plugin is compiled for Rust, only the first code will be compiled. Conversely, in a Hurtworld context, only the second code will be used.
+
+Available symbols
+ Rust	
+RUST
+ Hurtworld	
+HURTWORLD
+ 7 Days To Die	
+SEVENDAYS
+ 7 Days To Die latest_experimental	
+SEVENDAYS
+SEVENDAYSLATEST_EXPERIMENTAL
+ Reign Of Kings	
+REIGNOFKINGS
+ The Forest	
+THEFOREST
+Custom symbols
+In some plugins you may see the DEBUG symbol or other symbols used. These are primarily for testing purposes.
+
+Example
+#if DEBUG
+    Puts("Some test related info");
+#endif
+In order to enable these debugging code blocks, a preprocessor directive must be defined at the beginning of the plugin file.
+
+#define DEBUG
+
+using System;
+
+## Beginning of file: https://umod.org/documentation/api/approval-guide
+
+Style
+Best practices
+Code quality
+Performance
+Uniqueness
+Undesirables
+Approval Guide
+In order to ensure a plugin submission is approved, please consult the following guidelines carefully.
+
+Style
+Most importantly, the Style Guide covers the bare minimum conventions we expect when approving a plugin.
+
+Best practices
+Code quality
+While not a requirement, cleanly formatted code is always appreciated as it makes our job easier when we can easily follow the code of plugin being submitted. Visual Studio 2015 or above is always recommended to enable support for the latest C# version as well as numerous options for helping improve your code.
+
+Using statements (i.e. using System; at the top of the plugin) can easily get out of hand. Try to only add what is needed by the plugin and remove those that are not. Most development environments such as Visual Studio have options and addons to handle this and more.
+
+Use static code analysis tools. After a plugin is submitted or updated, an automatic inspection checks for hundreds of potential issues and scores each discovered issue by severity. Not all issues require developer attention, but most do. Many IDE's are often bundled with static code analysis tools and offer the same or similar functionality.
+
+Do not assume anything passed to a plugin by the game, engine, or hook parameters is not null. Use null conditional operators generously.
+
+Performance
+Each hook call takes up resources and time. Some hooks are called more than others, and each may have a different performance impact depending on game mechanics or server configuration.
+
+Be mindful of how often hooks are called and, when possible, avoid implementing computationally expensive methods in frequently called hooks. Delay or distribute computation cycles, use async or cooperative multitasking, and store frequently used resources in memory.
+
+Unsubscribe from unused hooks. If a plugin only requires a specific hook in certain cases (i.e. when a particular feature is enabled), then disable that hook in all other cases.
+
+Uniqueness
+When submitting resources to be published on uMod.org, developers must submit their own work or include express authorization from the original author(s) of the work.
+
+While we discourage and do not accept direct copying (or forks) of code from other developers, we generally do not deny plugins simply on the basis that they share any of the following components:
+
+Similar option
+Similar use-case
+Application design pattern
+Integration point
+Algorithm
+Undesirables
+There are certain types of plugins that we generally do not approve. These are often because of their general use for abuse, trolling, backdoors, causing conflicts, drama, potentially problematic, or going way beyond their purpose.
+
+Piracy enabling or authentication bypassing plugins (this should be an obvious one)
+Any plugin attempt to bypass sandboxing or security measures put in place (security is important)
+Any plugin containing a backdoor or access privileges for specific individuals, even developers
+FPS "booster" type plugins (these have been known to be malicious and problematic)
+All-in-one does-everything plugins (these defeat the purpose of being modular, often cause conflicts)
+Copies of existing plugins with various "fixes" in them (fixes should be contributed to the original)
+Copies of existing plugins with messages translated directly (translations can be contributed to the original)
+Plugins using any sort of obfuscation method
+
+## Beginning of file: https://umod.org/documentation/api/timers
+
+Single timer
+Continuous timer
+Repeating timer
+Immediate timer
+Destroying timer
+Timers
+Timers generally execute functions after a set interval. Optionally continuous, repeating, and immediate timers are also available.
+
+Single timer
+Executes a function once after the specified delay interval.
+
+timer.Once(1f, () =>
+{
+    Puts("Hello world!");
+});
+Continuous timer
+Executes a function at the specified delay interval (until the timer is manually destroyed or plugin is unloaded).
+
+timer.Every(3f, () =>
+{
+    Puts("Hello world!");
+});
+Repeating timer
+Executes a function a specific number of times at the specified delay interval. If the number of recurrences is not specified (0), then a repeating timer behaves identically to a continuous timer.
+
+timer.Repeat(5f, 0, () =>
+{
+    Puts("Hello world!");
+});
+Immediate timer
+Executes a function immediately (in the next frame).
+
+NextFrame(() =>
+{
+    Puts("Hello world!");
+});
+Destroying timer
+When a timer is no longer operating, it is marked as destroyed. Additionally timers may be destroyed manually if stored in a variable.
+
+Timer myTimer = timer.Every(3f, () =>
+{
+    Puts("Hello world!");
+});
+
+myTimer.Destroy();
+if (myTimer.Destroyed)
+{
+    Puts("Timer destroyed!");
+}
+
+## Beginning of file: https://umod.org/documentation/api/web-requests
+
+GET web request
+Advanced GET request
+POST web request
+PUT web request
+POST and PUT body
+Using a method callback
+Web Requests
+Make a web request to a URI (Uniform Resource Identifier) using the HTTP GET, POST, or PUT methods.
+
+Web requests create a raw connection to a web page as done in a web browser. The request will return true if the web request was sent, false if not.
+
+The callback is called with 2 parameters - an integer HTTP response code and a string response.
+
+GET web request
+The HTTP GET method is used to retrieve a resource, usually represented as XML or JSON. HTTP status code 200 (OK) is expected in response to a successful GET request.
+
+webrequest.Enqueue("http://www.google.com/search?q=umod", null, (code, response) =>
+{
+    if (code != 200 || response == null)
+    {
+        Puts($"Couldn't get an answer from Google!");
+        return;
+    }
+    Puts($"Google answered: {response}");
+}, this, RequestMethod.GET);
+Advanced GET request
+The following example demonstrates how to specify custom request timeout and/or additional headers.
+
+[Command("get")]
+private void GetRequest(IPlayer player, string command, string[] args)
+{
+    // Set a custom timeout (in milliseconds)
+    float timeout = 200f;
+
+    // Set some custom request headers (eg. for HTTP Basic Auth)
+    Dictionary<string, string> headers = new Dictionary<string, string> { { "header", "value" } };
+
+    webrequest.Enqueue("http://www.google.com/search?q=umod", null, (code, response) =>
+        GetCallback(code, response, player), this, RequestMethod.GET, headers, timeout);
+}
+
+private void GetCallback(int code, string response, IPlayer player)
+{
+    if (response == null || code != 200)
+    {
+        Puts($"Error: {code} - Couldn't get an answer from Google for {player.Name}");
+        return;
+    }
+
+    Puts($"Google answered for {player.Name}: {response}");
+}
+POST web request
+The HTTP POST method is generally used to create new resources. HTTP status code 200 (OK) OR HTTP status code 201 (Created), and an accompanying redirect (to the newly created resource) are expected in response to a successful POST request.
+
+webrequest.Enqueue("http://www.google.com/search?q=umod", "param1=value1", (code, response) =>
+{
+    if (code != 200 || response == null)
+    {
+        Puts($"Couldn't get an answer from Google!");
+        return;
+    }
+    Puts($"Google answered: {response}");
+}, this, RequestMethod.POST);
+PUT web request
+The HTTP PUT is generally used to update existing resources. The request body of a PUT request generally contains an updated representation of the original resource. HTTP status code 200 (OK) OR HTTP status code 204 (No Content) are expected in response to a successful PUT request.
+
+webrequest.Enqueue("http://www.google.com/search?q=umod", null, (code, response) =>
+{
+    if (code != 200 || response == null)
+    {
+        Puts($"Couldn't get an answer from Google!");
+        return;
+    }
+    Puts($"Google answered: {response}");
+}, this, RequestMethod.PUT);
+POST and PUT body
+Typically an updated resource is represented in a POST/PUT request body as a query string.
+
+Dictionary<string,string> parameters = new Dictionary<string,string>();
+
+parameters.Add("param1", "value1");
+parameters.Add("param2", "value2");
+
+string[] body = string.Join("&", parameters.Cast<string>().Select(key => string.Format("{0}={1}", key, source[key]));
+webrequest.Enqueue("http://www.google.com/search?q=umod", body, (code, response) =>
+{
+    if (code != 200 || response == null)
+    {
+        Puts($"Couldn't get an answer from Google!");
+        return;
+    }
+    Puts($"Google answered: {response}");
+}, this, RequestMethod.POST);
+Using a method callback
+The following example demonstrates how to refactor delegate behavior by encapsulating it in a separate method, rather than solely using an anonymous function.
+
+[Command("get")]
+private void GetRequest(IPlayer player, string command, string[] args)
+{
+    webrequest.EnqueueGet("http://www.google.com/search?q=umod", (code, response) => GetCallback(code, response, player), this);
+}
+
+private void GetCallback(int code, string response, IPlayer player)
+{
+    if (response == null || code != 200)
+    {
+        Puts($"Error: {code} - Couldn't get an answer from Google for {player.Name}");
+        return;
+    }
+
+    Puts($"Google answered for {player.Name}: {response}");
+}
+
+## Beginning of file: https://umod.org/documentation/api/commands
+
+Chat commands
+Console commands
+Command permissions
+Commands
+Custom commands are easily implemented with minimal boilerplate for both in-game chat interfaces and conventional command-line interfaces.
+
+Chat commands
+Chat commands are in-game commands entered via the game client's chat, prefixed by a forward slash (/).
+
+[Command("test")]
+private void TestCommand(IPlayer player, string command, string[] args)
+{
+    player.Reply("Test successful!");
+}
+Console commands
+Console commands may be executed from the server console and in-game interfaces (where applicable).
+
+[Command("epicstuff.test")]
+private void TestCommand(IPlayer player, string command, string[] args)
+{
+    player.Reply("Test successful!");
+}
+Command permissions
+Easily restrict command usage to players who have a permission assigned to them.
+
+[Command("test"), Permission("epicstuff.use")]
+private void TestCommand(IPlayer player, string command, string[] args)
+{
+    player.Reply("Test successful!");
+}
+
+## Beginning of file: https://umod.org/documentation/api/permissions
+
+Basic usage
+Groups
+Get all groups
+Check if group exists
+Create a group
+Remove a group
+Check if group has a permission
+Grant permission to a group
+Revoke permission from a group
+Get the rank for a group
+Get the title for a group
+Get parent group for a group
+Get permissions for a group
+Migrate group
+Users
+Get permissions granted to player
+Check if player has a permission
+Add player to a group
+Remove player from a group
+Check if player is in a group
+Grant permission to a player
+Revoke permission from a player
+Server
+Get all registered permissions
+Check if a permission exists
+Register a permission
+Permissions
+Oxide offers a substantial API to control user access with permissions and groups
+
+Basic usage
+For a primer on how to use permissions as a server owner, please consult the Using the Oxide permissions system tutorial.
+
+Most plugins can benefit from some permissions. Below is a basic example of how to register a permission and check if a player has that permission assigned to them.
+
+namespace Oxide.Plugins
+{
+    [Info("Epic Stuff", "Unknown Author", "0.1.0")]
+    [Description("Makes epic stuff happen")]
+    class EpicStuff : CovalencePlugin
+    {
+        private void Init()
+        {
+            permission.RegisterPermission("epicstuff.use", this);
+        }
+
+        private void OnUserConnected(IPlayer player)
+        {
+            if (player.HasPermission("epicstuff.use"))
+            {
+                // Player has permission, do special stuff for them
+            }
+        }
+    }
+}
+API
+Groups
+Get all groups
+string[] groups = permission.GetGroups();
+Check if group exists
+bool GroupExists = permission.GroupExists("GroupName");
+Create a group
+bool GroupCreated = permission.CreateGroup("GroupName", "Group Title", 0);
+Remove a group
+bool GroupRemoved = permission.RemoveGroup("GroupName");
+Check if group has a permission
+bool GroupHasPermission = permission.GroupHasPermission("GroupName", "epicstuff.use");
+Grant permission to a group
+permission.GrantGroupPermission("GroupName", "epicstuff.use", this);
+Revoke permission from a group
+permission.RevokeGroupPermission("GroupName", "epicstuff.use");
+Get the rank for a group
+int GroupRank = permission.GetGroupRank("GroupName");
+Get the title for a group
+string GroupTitle = permission.GetGroupTitle("GroupName");
+Get parent group for a group
+string GroupParent = permission.GetGroupParent("GroupName");
+Get permissions for a group
+string[] permissions = permission.GetGroupPermissions("GroupName", false);
+Migrate group
+permission.MigrateGroup("OldGroupName", "NewGroupName");
+Users
+Get permissions granted to player
+string[] UserPermissions = permission.GetUserPermissions("playerID");
+Check if player has a permission
+bool UserHasPermission = permission.UserHasPermission("playerID", "epicstuff.use");
+Add player to a group
+permission.AddUserGroup("playerID", "GroupName");
+Remove player from a group
+permission.RemoveUserGroup("playerID", "GroupName");
+Check if player is in a group
+bool UserHasGroup = permission.UserHasGroup("playerID", "GroupName");
+Grant permission to a player
+permission.GrantUserPermission("playerID", "epicstuff.use", this);
+Revoke permission from a player
+permission.RevokeUserPermission("playerID", "epicstuff.use");
+Server
+Get all registered permissions
+string[] permissions = permission.GetPermissions();
+Check if a permission exists
+bool PermissionExists = permission.PermissionExists("epicstuff.use", this);
+Register a permission
+permission.RegisterPermission("epicstuff.use", this);
+
+## Beginning of file: https://umod.org/documentation/api/database
+
+Open a connection
+Close the connection
+Query the database
+Insert query
+Update query
+Delete query
+Non-query
+Database
+The Oxide database extensions implement a generalized database abstraction layer for both MySQL and SQLite.
+
+Open a connection
+Create a new connection to a database by providing the database file location or an address (URI and port), a database name, and authentication credentials.
+
+Core.MySql.Libraries.MySql sqlLibrary = Interface.Oxide.GetLibrary<Core.MySql.Libraries.MySql>();
+Connection sqlConnection = sqlLibrary.OpenDb("localhost", 3306, "umod", "username", "password", this);
+Close the connection
+Close an existing connection to the database.
+
+sqlLibrary.CloseDb(sqlConnection);
+Query the database
+Retrieve data from the database, typically using a SELECT statement.
+
+string sqlQuery = "SELECT `id`, `field1`, `field2` FROM example_table";
+Sql selectCommand = Oxide.Core.Database.Sql.Builder.Append(sqlQuery);
+
+sqlLibrary.Query(selectCommand, sqlConnection, list =>
+{
+    if (list == null)
+    {
+        return; // Empty result or no records found
+    }
+
+    StringBuilder newString = new StringBuilder();
+    newString.AppendLine(" id\tfield1\tfield2");
+
+    // Iterate through resulting records
+    foreach (Dictionary<string, object> entry in list)
+    {
+        newString.AppendFormat(" {0}\t{1}\t{2}\n", entry["id"], entry["field1"], entry["field2"]);
+    }
+
+    Puts(newString.ToString());
+});
+Insert query
+Insert records into the database using an INSERT statement.
+
+string sqlQuery = "INSERT INTO example_table (`field1`, `field2`) VALUES (@0, @1);";
+Sql insertCommand = Oxide.Core.Database.Sql.Builder.Append(sqlQuery, "field1 value", "field2 value");
+
+sqlLibrary.Insert(insertCommand, sqlConnection, rowsAffected =>
+{
+    if (rowsAffected > 0)
+    {
+        Puts("New record inserted with ID: {0}", sqlConnection.LastInsertRowId);
+    }
+});
+Update query
+Update existing records in the database using an UPDATE statement.
+
+int exampleId = 2;
+string sqlQuery = "UPDATE example_table SET `field1` = @0, `field2` = @1  WHERE `id` = @2;";
+Sql updateCommand = Oxide.Core.Database.Sql.Builder.Append(sqlQuery, "field1 value", "field2 value", exampleId);
+
+sqlLibrary.Update(updateCommand, sqlConnection, rowsAffected =>
+{
+    if (rowsAffected > 0)
+    {
+        Puts("Record successfully updated!");
+    }
+});
+Delete query
+Delete existing records from a database using a DELETE statement.
+
+int exampleId = 2;
+string sqlQuery = "DELETE FROM example_table WHERE `id` = @0;";
+Sql deleteCommand = Oxide.Core.Database.Sql.Builder.Append(sqlQuery, exampleId);
+
+sqlLibrary.Delete(deleteCommand, sqlConnection, rowsAffected =>
+{
+    if (rowsAffected > 0)
+    {
+        Puts("Record successfully deleted!");
+    }
+});
+Non-query
+By definition a non-query is a query which modifies data and does not retrieve data. Insert, Update, and Delete queries are all considered non-queries.
+
+int exampleId = 2;
+string sqlQuery = "UPDATE example_table SET `field1` = @0, `field2` = @1  WHERE `id` = @3;";
+Sql sqlCommand = Oxide.Core.Database.Sql.Builder.Append(sqlQuery, "field1 value", "field2 value", exampleId);
+
+sqlLibrary.ExecuteNonQuery(sqlCommand, sqlConnection);
